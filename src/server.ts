@@ -1,15 +1,21 @@
 import express, { Application, Request, Response } from "express";
+import config from "./config";
+import { initDB } from "./db/index";
+import app from "./app";
 
-const app: Application = express();
 
-app.use(express.json());
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Server is running!");
-});
 
-const PORT = 5000;
+const main = async () => {
+  const PORT = config.port;
+  initDB();
 
-app.listen(PORT, () => {
+  app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-});
+  });
+
+// Connect database
+};
+
+
+main();
