@@ -1,13 +1,15 @@
 import { pool } from "../../db";
 import { IIssues } from "./issues.interface";
+import jwt from "jsonwebtoken";
+import config from "../../config";
 
 const IssuesCreate = async (payload: IIssues) => {
   // Simulate issue creation logic (e.g., save issue to database)
-  const { title, description, type } = payload;
+  const { title, description, type, reporter_id } = payload;
 
   const result = await pool.query(
-    `INSERT INTO issues (title, description, type) VALUES ($1, $2, $3) RETURNING *`,
-    [title, description, type],
+    `INSERT INTO issues (title, description, type, reporter_id) VALUES ($1, $2, $3, $4) RETURNING *`,
+    [title, description, type, reporter_id],
   );
   return result;
 };
@@ -41,28 +43,28 @@ const getSingleIssue = async (issueId: string) => {
   }
 };
 
-const updateIssue = async (issueId: string, payload: IIssues) => {
+const updateIssue = async (payload: IIssues) => {
   const { title, description, type } = payload;
 
   const result = await pool.query(
-    `UPDATE issues SET title = $1, description = $2, type = $3 WHERE id = $4 RETURNING *`,
-    [title, description, type, issueId],
+    `UPDATE issues SET title = $1, description = $2, type = $3 RETURNING *`,
+    [title, description, type],
   );
   return result;
 };
 
-const deleteIssue = async (issueId: string) => {
+async function deleteIssue(issueId: string) {
   const result = await pool.query(
     `DELETE FROM issues WHERE id = $1 RETURNING *`,
-    [issueId],
+    [issueId]
   );
   return result;
-};
+}
 
 export const IssuesService = {
   IssuesCreate,
   getAllIssues,
   getSingleIssue,
   updateIssue,
-  deleteIssue
+  deleteIssue,
 };

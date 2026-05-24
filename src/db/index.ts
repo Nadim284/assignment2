@@ -34,10 +34,11 @@ export const initDB = async () => {
                 type VARCHAR(20) NOT NULL,  
                 status VARCHAR(20) NOT NULL DEFAULT 'open',
                 
-                reporter_id INTEGER REFERENCES users(id),
+                reporter_id INTEGER REFERENCES users(id) NOT NULL,
                 
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
             )
 
     `);

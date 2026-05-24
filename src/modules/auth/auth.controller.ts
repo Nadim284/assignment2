@@ -1,15 +1,14 @@
 import type { Request, Response } from "express";
 import { AuthService } from "./auth.service";
 import sendResponse from "../../utility/sendResponse";
+import cookies from "cookie-parser";
 
 const createUser = async (req: Request, res: Response) => {
   // Handle user registration logic here
 
     try {
     // Simulate user registration logic (e.g., save user to database)
-
-        console.log("Registering user:", req.body);
-
+        
         const userData = req.body;
 
         const result = await AuthService.registerUser(userData);
@@ -18,7 +17,7 @@ const createUser = async (req: Request, res: Response) => {
             statusCode: 201,
             success: true,
             message: "User created successfully",
-            user: result,
+            data: result,
         });
     } 
     catch (error) {
@@ -37,9 +36,16 @@ const loginUser = async (req: Request, res: Response) => {
   // Handle user login logic here
 
     try{
-        const { email, password } = req.body;
+    
+        const result = await AuthService.loginUser(req.body);
 
-        const result = await AuthService.loginUser({ email, password });
+        const {refreshToken} = result;
+
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "lax",
+        });
 
         if (!result) {
             return res.status(401).json({ message: "Invalid email or password" });
@@ -49,7 +55,7 @@ const loginUser = async (req: Request, res: Response) => {
             statusCode: 200,
             success: true,
             message: "User logged in successfully",
-            user: result,
+            data: result,
         });
     }
     catch(error){
@@ -59,7 +65,28 @@ const loginUser = async (req: Request, res: Response) => {
 
 }
 
+const refreshToken = async (req: Request, res: Response) => {
+    
+    try{
+    
+        const result = await AuthService.generateRefreshToken(req.cookies.refreshToken);
+
+        sendResponse(res, {
+            statusCode: 200,
+            success: true,
+            message: "Refresh token generated successfully",
+            data: result,
+        });
+    }
+    catch(error){
+        console.error("Error generating refresh token:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
 export const AuthController = {
     createUser,
     loginUser,
+    refreshToken,
 };
+
